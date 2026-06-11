@@ -1,0 +1,15 @@
+# Editor temp files
+*~
+*.swp
+*.swo
+
+# IDE settings
+.vscode/
+.idea/
+
+# Packaged extension files
+*.xpi
+*.zip
+
+.DS_Store
+Thumbs.db
