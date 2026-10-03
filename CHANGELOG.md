@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.5
+
+### Fixed
+- Fixed Youtube Music DOM selectors.
+
 ## 1.0.4
 
 ### Fixed
