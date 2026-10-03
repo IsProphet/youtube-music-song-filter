@@ -12,37 +12,32 @@ let lastCheckedTitle = "";
 let skipping = false;
 
 async function loadKeywords() {
-    const result = await browser.storage.local.get([
-        "keywords",
-        "enabled"
-    ]);
-
-    keywords =
-        (result.keywords || []).map(k => k.toLowerCase());
-
-    enabled =
-        result.enabled !== false;
+    try {
+        const result = await browser.storage.local.get([
+            "keywords",
+            "enabled"
+        ]);
+        keywords =
+            (result.keywords || []).map(k => k.toLowerCase());
+        enabled =
+            result.enabled !== false;
+    } catch (error) {
+        console.error("YTM Song Filter: loadKeywords failed:", error);
+        throw error;
+    }
 }
 
 browser.storage.onChanged.addListener(loadKeywords);
 
 function getCurrentSongTitle() {
-    const titleElement = document.querySelector("ytmusic-player-bar .title");
+    const titleElement = document.querySelector("div.ytmusicTrackInfoTitle");
 
     return titleElement?.textContent?.trim() || "";
 }
 
 function getNextButton() {
-    return (
-        document.querySelector(
-            'ytmusic-player-bar button[aria-label="Next"]'
-        ) ||
-        document.querySelector(
-            'ytmusic-player-bar .next-button button'
-        ) ||
-        document.querySelector(
-            'ytmusic-player-bar .next-button'
-        )
+    return document.querySelector(
+        'button.ytSpecButtonShapeNextHost[aria-label="Next"]'
     );
 }
 
@@ -51,11 +46,18 @@ function skipSong() {
 
     if (!nextButton) {
         debugLog("Next button not found");
-
         return;
     }
 
-    nextButton.click();
+    debugLog("Next button found — dispatching click");
+
+    nextButton.dispatchEvent(
+        new MouseEvent("click", {
+            bubbles: true,
+            cancelable: true,
+            view: window
+        })
+    );
 }
 
 function checkSong() {
@@ -84,9 +86,10 @@ function checkSong() {
 }
 
 function observeSongChanges() {
-    const playerBar = document.querySelector("ytmusic-player-bar");
+    const titleElement = document.querySelector("div.ytmusicTrackInfoTitle");
 
-    if (!playerBar) {
+    if (!titleElement) {
+        debugLog("Song title element not found");
         setTimeout(observeSongChanges, 1000);
         return;
     }
@@ -95,7 +98,7 @@ function observeSongChanges() {
         checkSong();
     });
 
-    observer.observe(playerBar, {
+    observer.observe(titleElement, {
         childList: true,
         subtree: true,
         characterData: true
